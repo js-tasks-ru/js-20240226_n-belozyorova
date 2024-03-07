@@ -5,14 +5,14 @@
  */
 export function invertObj(obj) {
   if (typeof obj !== 'object') {
-    return undefined;
+    return;
   }
 
   const newObj = {};
 
-  Object.entries(obj).forEach(([key, value]) => {
+  for (const [key, value] of Object.entries(obj)) {
     newObj[value] = key;
-  });
+  }
 
   return newObj;
 }
