@@ -10,7 +10,7 @@ export function createGetter(path) {
     let tmp = obj;
 
     for (const objKey of objKeys) {
-      if (typeof tmp !== Object || !tmp.hasOwnProperty(objKey)) {
+      if (!tmp?.hasOwnProperty(objKey)) {
         return;
       }
 
