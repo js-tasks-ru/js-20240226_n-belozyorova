@@ -17,36 +17,37 @@ export default class ColumnChart {
 
   createTemplate() {
     return `
-      <div class="column-chart ${this.getLoadingClass(this.getNoData(this.data))}">
+      <div class="column-chart ${this.getLoadingClass()}">
         <div class="column-chart__title">
-          ${this.createTitleTemplate(this.label, this.link)}
+          ${this.createTitleTemplate()}
         </div>
         <div class="column-chart__container">
-          ${this.createChartAreaTemplate(this.getHeading(this.value, this.formatHeading), this.getColumnsProps(this.data))}
+          ${this.createChartAreaTemplate()}
         </div>
       </div>
     `;
   }
 
-  createTitleTemplate(label, link) {
-    let template = label;
+  createTitleTemplate() {
+    let template = this.label;
 
-    if (!!link) {
-      template += `<a href="${link}" class="column-chart__link">Подробнее</a>`;
+    if (!!this.link) {
+      template += `<a href="${this.link}" class="column-chart__link">Подробнее</a>`;
     }
 
     return template;
   }
 
-  createChartAreaTemplate(heading, chartColumns) {
+  createChartAreaTemplate() {
     return `
-      <div class="column-chart__header">${heading}</div>
-      <div class="column-chart__chart">${this.createChartTemplate(chartColumns)}</div>
+      <div class="column-chart__header">${this.getHeading()}</div>
+      <div class="column-chart__chart">${this.createChartTemplate()}</div>
     `;
   }
 
-  createChartTemplate(chartColumns) {
+  createChartTemplate() {
     let chartTemplate = '';
+    const chartColumns = this.getColumnsProps();
 
     for (let column of chartColumns) {
       chartTemplate += this.createChartColumnTemplate(column);
@@ -74,16 +75,16 @@ export default class ColumnChart {
     return element.firstElementChild;
   }
 
-  getHeading(value, formatHeading) {
-    return typeof formatHeading === 'function' ? formatHeading(value) : value;
+  getHeading() {
+    return typeof this.formatHeading === 'function' ? this.formatHeading(this.value) : this.value;
   }
 
-  getNoData(data) {
-    return !data || data?.length === 0;
+  getNoData() {
+    return !this.data || this.data?.length === 0;
   }
 
-  getLoadingClass(noData) {
-    return noData ? this.loadingClassName : '';
+  getLoadingClass() {
+    return this.getNoData() ? this.loadingClassName : '';
   }
 
   getScale(maxValue) {
@@ -98,28 +99,28 @@ export default class ColumnChart {
     return (item / maxItem * 100).toFixed(0) + '%';
   }
 
-  getColumnsProps(data) {
-    if (this.getNoData(data)) {
+  getColumnsProps() {
+    if (this.getNoData()) {
       return [];
     }
 
-    const maxValue = Math.max(...data);
+    const maxValue = Math.max(...this.data);
     const scale = this.getScale(maxValue);
 
-    return data.map(item => ({
+    return this.data.map(item => ({
       height: this.getColumnHeight(item, scale),
       percent: this.getColumnPercent(item, maxValue)
     }));
   }
 
-  updateColumns(data) {
-    const chartColumns = this.getColumnsProps(data);
+  updateColumns() {
+    const chartColumns = this.getColumnsProps();
     const chartTemplate = this.createChartTemplate(chartColumns);
     this.element.getElementsByClassName('column-chart__chart')[0].innerHTML = chartTemplate;
   }
 
-  updateLoadingState(noData) {
-    if (noData) {
+  updateLoadingState() {
+    if (this.getNoData()) {
       this.element.classList.add(this.loadingClassName);
     } else {
       this.element.classList.remove(this.loadingClassName);
@@ -128,8 +129,8 @@ export default class ColumnChart {
 
   update(data) {
     this.data = data;
-    this.updateColumns(this.data);
-    this.updateLoadingState(this.getNoData(this.data));
+    this.updateColumns();
+    this.updateLoadingState();
   }
 
   remove() {
