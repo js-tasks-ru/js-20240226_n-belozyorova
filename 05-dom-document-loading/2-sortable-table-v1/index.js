@@ -8,8 +8,8 @@ export default class SortableTable {
     this.data = data;
     this.element = createElement(this.createTemplate());
     this.subElements = {
-      headerCells: this.getHeaderColumnContainers(),
-      body: this.getBodyContainer(),
+      body: this.element.querySelector('[data-element="body"]'),
+      header: this.element.querySelector('[data-element="header"]'),
     };
   }
 
@@ -75,18 +75,6 @@ export default class SortableTable {
       : `<div class="sortable-table__cell">${data}</div>`;
   }
 
-  getHeaderColumnContainers() {
-    const headerContainer = this.element.querySelector('[data-element="header"]');
-
-    return Object.fromEntries(this.headerConfig.map(columnConfig =>
-      [columnConfig?.id, headerContainer.querySelector(`[data-id="${columnConfig?.id}"]`)]
-    ));
-  }
-
-  getBodyContainer() {
-    return this.element.querySelector('[data-element="body"]');
-  }
-
   getColumnConfig(field) {
     return this.headerConfig?.find(item => item.id === field);
   }
@@ -125,10 +113,10 @@ export default class SortableTable {
 
   updateHeader(field, order) {
     if (this.lastSortField) {
-      this.subElements.headerCells[this.lastSortField].removeAttribute('data-order');
+      this.subElements.header.querySelector(`[data-id="${this.lastSortField}"]`)?.removeAttribute('data-order');
     }
     
-    this.subElements.headerCells[field].setAttribute('data-order', order);
+    this.subElements.header.querySelector(`[data-id="${field}"]`)?.setAttribute('data-order', order);
   }
 
   updateBody() {

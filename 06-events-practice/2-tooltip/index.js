@@ -1,6 +1,5 @@
 class Tooltip {
   static instance;
-  dataSelector = 'tooltip';
 
   constructor() {
     if (Tooltip.instance) {
@@ -11,12 +10,12 @@ class Tooltip {
     this.element = this.createElement(this.createTemplate);
   }
 
-  initialize () {
+  initialize() {
     this.createEventListeners();
   }
 
   createTemplate() {
-    return `<div class="tooltip"></div>`;
+    return '<div class="tooltip"></div>';
   }
 
   createElement(template) {
@@ -43,21 +42,28 @@ class Tooltip {
     document.removeEventListener('pointerout', this.onDocumentPointerOut);
   }
 
-  setText(text) {
-    this.element.innerHTML = text;
-  }
-
   onDocumentPointerOver = (e) => {
-    const tooltipText = e.target?.dataset[this.dataSelector];
-
-    if (tooltipText) {
-      this.setText(tooltipText);
-      this.render();
+    if (!e.target?.dataset?.tooltip) {
+      return;
     }
+
+    this.element.innerHTML = e.target.dataset.tooltip;
+    this.render();
+    e.target.addEventListener('pointermove', this.onDocumentPointerMove);
   };
 
   onDocumentPointerOut = (e) => {
+    if (!e.target?.dataset?.tooltip) {
+      return;
+    }
+
+    e.target.removeEventListener('pointermove', this.onDocumentPointerMove);
     this.remove();
+  };
+
+  onDocumentPointerMove = (e) => {
+    this.element.style.setProperty('top', e.y + 10 + 'px');
+    this.element.style.setProperty('left', e.x + 10 + 'px');
   };
 
   remove() {

@@ -8,15 +8,8 @@ export default class SortableTable extends SortableTableV1 {
   } = {}) {
     super(headersConfig, data);
     this.sorted = sorted;
-
-    this.makeSubelementsForTests();
     this.initialSort();
-    this.createEventListeners();
-  }
-
-  makeSubelementsForTests() {
-    this.subElements.header = {};
-    this.subElements.header.children = Object.values(this.subElements.headerCells);
+    this.createEventListener();
   }
 
   initialSort() {
@@ -38,28 +31,16 @@ export default class SortableTable extends SortableTableV1 {
     this.sort(dataset.id, dataset.order === 'desc' ? 'asc' : 'desc');
   }
 
-  createEventListeners() {
-    for (let cell of Object.values(this.subElements.headerCells)) {
-      if (!cell.dataset.sortable) {
-        continue;
-      }
-
-      cell.addEventListener('pointerdown', this.handleHeaderCellClick);
-    }
+  createEventListener() {
+    this.subElements.header.addEventListener('pointerdown', this.handleHeaderCellClick);
   }
 
-  destroyEventListeners() {
-    for (let cell of Object.values(this.subElements.headerCells)) {
-      if (!cell.dataset.sortable) {
-        continue;
-      }
-
-      cell.removeEventListener('pointerdown', this.handleHeaderCellClick);
-    }
+  destroyEventListener() {
+    this.subElements.header.removeEventListener('pointerdown', this.handleHeaderCellClick);
   }
 
   destroy() {
-    this.destroyEventListeners();
+    this.destroyEventListener();
     super.destroy();
   }
 }
