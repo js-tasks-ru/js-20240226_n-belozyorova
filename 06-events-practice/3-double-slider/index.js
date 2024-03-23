@@ -72,7 +72,7 @@ export default class DoubleSlider {
   onDocumentPointerUp = () => {
     document.body.style.cursor = 'grab';
     document.removeEventListener('pointermove', this.onDocumentPointerMove);
-    document.addEventListener('pointerup', this.onDocumentPointerUp);
+    document.removeEventListener('pointerup', this.onDocumentPointerUp);
     this.thumbMoving = null;
     this.dispatchRangeSelectEvent();
   }
