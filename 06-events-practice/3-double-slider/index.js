@@ -1,11 +1,11 @@
 import {createElement} from '../../utils/dom';
 
-const SLIDER_PADDING = 60;
-const PROGRESS_PADDING = 14;
 export default class DoubleSlider {
   sliderWidth;
   maxRangeWidth;
-  sliderPadding
+  thumbMoving;
+  movingSide;
+  otherSide;
 
   constructor(options = {
     min: 0,
@@ -14,6 +14,7 @@ export default class DoubleSlider {
     formatValue: value => value,
   }) {    
     this.options = options;
+    this.formatValue = this.options.formatValue;
     this.setInitialData();
 
     this.element = createElement(this.createTemplate());
@@ -29,13 +30,13 @@ export default class DoubleSlider {
   createTemplate() {
     return `
       <div class="range-slider">
-        <span data-element="from">${this.getValueLabel(this.range.left)}</span>
+        <span data-element="from">${this.formatValue(this.range.left)}</span>
         <div class="range-slider__inner">
           <span class="range-slider__progress" style="left: ${this.percent.left}%; right: ${this.percent.right}%"></span>
           <span class="range-slider__thumb-left" style="left: ${this.percent.left}%"></span>
           <span class="range-slider__thumb-right" style="right: ${this.percent.right}%"></span>
         </div>
-        <span data-element="to">${this.getValueLabel(this.range.right)}</span>
+        <span data-element="to">${this.formatValue(this.range.right)}</span>
       </div>
     `;
   }
@@ -44,22 +45,12 @@ export default class DoubleSlider {
     this.sliderWidth = this.element.getBoundingClientRect().width;
   }
 
-  getValueLabel(value) {
-    if (this.options?.formatValue && typeof this.options?.formatValue === 'function') {
-      return this.options.formatValue(value);
-    }
-
-    return value;
-  }
-
   createEventListeners() {
     this.element.addEventListener('pointerdown', this.onSliderPointerDown);
-    document.addEventListener('pointerup', this.onSliderPointerUp);
   }
 
   destroyEventListeners() {
     this.element.removeEventListener('pointerdown', this.onSliderPointerDown);
-    document.removeEventListener('pointerup', this.onSliderPointerUp);
   }
 
   onSliderPointerDown = (e) => {
@@ -69,52 +60,55 @@ export default class DoubleSlider {
     }
 
     this.thumbMoving = e.target;
+    this.movingSide = this.thumbMoving.classList[0].includes('left') ? 'left' : 'right';
+    this.otherSide = this.movingSide === 'left' ? 'right' : 'left';
+
     this.setSliderWidth();
     document.body.style.cursor = 'grabbing';
-    document.addEventListener('pointermove', this.onSliderPointerMove);
+    document.addEventListener('pointermove', this.onDocumentPointerMove);
+    document.addEventListener('pointerup', this.onDocumentPointerUp);
   }
 
-  onSliderPointerUp = () => {
+  onDocumentPointerUp = () => {
     document.body.style.cursor = 'grab';
-    document.removeEventListener('pointermove', this.onSliderPointerMove);
+    document.removeEventListener('pointermove', this.onDocumentPointerMove);
+    document.addEventListener('pointerup', this.onDocumentPointerUp);
     this.thumbMoving = null;
     this.dispatchRangeSelectEvent();
   }
 
-  onSliderPointerMove = (e) => {
-    const side = this.thumbMoving.classList[0].includes('left') ? 'left' : 'right';
-    const offsetPercent = this.getOffsetPercent(e.clientX, side);
+  onDocumentPointerMove = (e) => {
+    const offsetPercent = this.getOffsetPercent(e.clientX, this.movingSide);
 
-    this.percent[side] = offsetPercent;
-    this.changeSideValue(side);
-    this.moveThumb(side);
+    this.percent[this.movingSide] = offsetPercent;
+    this.changeSideValue();
+    this.moveThumb();
   }
 
-  moveThumb(side) {
-    this.thumbMoving.style[side] = this.percent[side] + '%';
-    this.subElements.progress.style[side] = this.percent[side] + '%';
+  moveThumb() {
+    this.thumbMoving.style[this.movingSide] = this.percent[this.movingSide] + '%';
+    this.subElements.progress.style[this.movingSide] = this.percent[this.movingSide] + '%';
   }
 
-  updateLabel(side) {
-    const labelData = side === 'left' ? 'from' : 'to';
+  updateLabel() {
+    const labelData = this.movingSide === 'left' ? 'from' : 'to';
     const label = this.element.querySelector(`[data-element="${labelData}"]`);
-    label.textContent = this.getValueLabel(this.range[side]);
+    label.textContent = this.formatValue(this.range[this.movingSide]);
   }
 
-  changeSideValue(side) {
-    this.range[side] = this.getValueByPercent(this.percent[side], side);
-    this.updateLabel(side);
+  changeSideValue() {
+    this.range[this.movingSide] = this.getValueByPercent(this.percent[this.movingSide]);
+    this.updateLabel();
   }
 
   
-  getOffsetPercent(x, side) {
+  getOffsetPercent(x) {
     const boundedX = this.boundX(x);
-    const thumbToSide = (side === 'left') ? boundedX : this.sliderWidth - boundedX;
+    const thumbToSide = (this.movingSide === 'left') ? boundedX : this.sliderWidth - boundedX;
     const offsetPercent = thumbToSide / this.sliderWidth * 100;
-    const otherSide = side === 'left' ? 'right' : 'left';
 
-    if (offsetPercent + this.percent[otherSide] > 100) {
-      return 100 - this.percent[otherSide];
+    if (offsetPercent + this.percent[this.otherSide] > 100) {
+      return 100 - this.percent[this.otherSide];
     }
 
     return offsetPercent;
@@ -133,8 +127,8 @@ export default class DoubleSlider {
   }
 
   setInitialData() {
-    this.min = this.getValueLabel(this.options.min);
-    this.max = this.getValueLabel(this.options.max);
+    this.min = this.formatValue(this.options.min);
+    this.max = this.formatValue(this.options.max);
     this.maxRangeWidth = this.options.max - this.options.min;
     this.setInitialRange();
     this.setInitialPercentsRange();
@@ -154,13 +148,13 @@ export default class DoubleSlider {
     };
   }
 
-  getPercentOfValue(value, side) {
-    const diff = side === 'left' ? value - this.options.min : this.options.max - value;
+  getPercentOfValue(value) {
+    const diff = this.side === 'left' ? value - this.options.min : this.options.max - value;
     return diff / (this.options.max - this.options.min) * 100;
   }
 
-  getValueByPercent(percent, side) {
-    const percentFromLeft = side === 'left' ? percent : 100 - percent;
+  getValueByPercent(percent) {
+    const percentFromLeft = this.movingSide === 'left' ? percent : 100 - percent;
     return Math.round(this.options.min + percentFromLeft / 100 * this.maxRangeWidth);
   }
 
