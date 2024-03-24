@@ -6,7 +6,7 @@ export default class ColumnChart {
     this.initProperties(props);
     this.element = this.createElement(this.createTemplate());
     this.subElements = {
-      body: this.element.getElementsByClassName('column-chart__chart')[0]
+      body: this.element.querySelector('[data-element="body"]')
     };
   }
 
@@ -43,8 +43,8 @@ export default class ColumnChart {
 
   createChartAreaTemplate() {
     return `
-      <div class="column-chart__header">${this.getHeading()}</div>
-      <div class="column-chart__chart">${this.createChartTemplate()}</div>
+      <div data-element="header" class="column-chart__header">${this.getHeading()}</div>
+      <div data-element="body" class="column-chart__chart">${this.createChartTemplate()}</div>
     `;
   }
 
