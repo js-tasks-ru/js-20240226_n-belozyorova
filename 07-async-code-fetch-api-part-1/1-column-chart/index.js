@@ -20,17 +20,19 @@ export default class ColumnChart extends ColumnChartV1 {
     this.url = new URL(url, BACKEND_URL);
 
     this.range = range;
+    this.updateUrl();
   }
 
   async update(from, to) {
     this.range = {from, to};
+    this.updateUrl();
+
     const chartData = await this.fetchData();
     super.update(chartData);
     return chartData;
   }
 
   async fetchData() {
-    this.updateUrl();
     return await fetchJson(this.url);
   }
 
