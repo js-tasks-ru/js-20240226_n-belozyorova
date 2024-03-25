@@ -5,6 +5,9 @@ export default class ColumnChart {
   constructor(props) {
     this.initProperties(props);
     this.element = this.createElement(this.createTemplate());
+    this.subElements = {
+      body: this.element.querySelector('[data-element="body"]')
+    };
   }
 
   initProperties(props) {
@@ -40,8 +43,8 @@ export default class ColumnChart {
 
   createChartAreaTemplate() {
     return `
-      <div class="column-chart__header">${this.getHeading()}</div>
-      <div class="column-chart__chart">${this.createChartTemplate()}</div>
+      <div data-element="header" class="column-chart__header">${this.getHeading()}</div>
+      <div data-element="body" class="column-chart__chart">${this.createChartTemplate()}</div>
     `;
   }
 
@@ -116,7 +119,7 @@ export default class ColumnChart {
   updateColumns() {
     const chartColumns = this.getColumnsProps();
     const chartTemplate = this.createChartTemplate(chartColumns);
-    this.element.getElementsByClassName('column-chart__chart')[0].innerHTML = chartTemplate;
+    this.subElements.body.innerHTML = chartTemplate;
   }
 
   updateLoadingState() {
@@ -128,7 +131,10 @@ export default class ColumnChart {
   }
 
   update(data) {
-    this.data = data;
+    this.data = typeof data === Array
+      ? data
+      : data && Object.values(data) || [];
+    
     this.updateColumns();
     this.updateLoadingState();
   }
