@@ -6,6 +6,10 @@ export default class SortableTable {
   constructor(headerConfig = [], data = []) {
     this.headerConfig = headerConfig;
     this.data = data;
+    this.makeElement();
+  }
+
+  makeElement() {
     this.element = createElement(this.createTemplate());
     this.subElements = {
       body: this.element.querySelector('[data-element="body"]'),
@@ -81,6 +85,10 @@ export default class SortableTable {
 
   sort(field, order) {
     this.sortData(field, order);
+    this.render(field, order);
+  }
+
+  render(field, order) {
     this.updateHeader(field, order);
     this.updateBody();
     this.lastSortField = field;
