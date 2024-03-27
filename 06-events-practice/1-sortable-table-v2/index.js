@@ -1,5 +1,5 @@
 
-import SortableTableV1 from '../../05-dom-document-loading/2-sortable-table-v1';
+import SortableTableV1 from '../../05-dom-document-loading/2-sortable-table-v1/index.js';
 
 export default class SortableTable extends SortableTableV1 {
   constructor(headersConfig, {
@@ -9,7 +9,7 @@ export default class SortableTable extends SortableTableV1 {
     super(headersConfig, data);
     this.sorted = sorted;
     this.initialSort();
-    this.createEventListener();
+    this.createEventListeners();
   }
 
   initialSort() {
@@ -31,16 +31,16 @@ export default class SortableTable extends SortableTableV1 {
     this.sort(dataset.id, dataset.order === 'desc' ? 'asc' : 'desc');
   }
 
-  createEventListener() {
+  createEventListeners() {
     this.subElements.header.addEventListener('pointerdown', this.handleHeaderCellClick);
   }
 
-  destroyEventListener() {
+  destroyEventListeners() {
     this.subElements.header.removeEventListener('pointerdown', this.handleHeaderCellClick);
   }
 
   destroy() {
-    this.destroyEventListener();
+    this.destroyEventListeners();
     super.destroy();
   }
 }
