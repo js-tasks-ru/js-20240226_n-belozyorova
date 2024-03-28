@@ -6,14 +6,12 @@ export default class SortableTable {
   constructor(headerConfig = [], data = []) {
     this.headerConfig = headerConfig;
     this.data = data;
-    this.makeElement();
-  }
-
-  makeElement() {
     this.element = createElement(this.createTemplate());
     this.subElements = {
       body: this.element.querySelector('[data-element="body"]'),
       header: this.element.querySelector('[data-element="header"]'),
+      loadingLine: this.element.querySelector('[data-element="loading"]'),
+      emptyPlaceholder: this.element.querySelector('[data-element="emptyPlaceholder"]'),
     };
   }
 
@@ -23,6 +21,8 @@ export default class SortableTable {
         <div class="sortable-table">
           ${this.createHeaderTemplate()}
           ${this.createBodyTemplate()}
+          ${this.createLoadingLineTemplate()}
+          ${this.createEmptyPlaceholderTemplate()}
         </div>
       </div>
     `;
@@ -77,6 +77,21 @@ export default class SortableTable {
     return templateFunc
       ? templateFunc(data)
       : `<div class="sortable-table__cell">${data}</div>`;
+  }
+
+  createLoadingLineTemplate() {
+    return '<div data-element="loading" class="loading-line sortable-table__loading-line" style="display: none;"></div>';
+  }
+
+  createEmptyPlaceholderTemplate() {
+    return `
+      <div data-element="emptyPlaceholder" class="sortable-table__empty-placeholder" style="display: none;">
+        <div>
+          <p>No products satisfies your filter criteria</p>
+          <button type="button" class="button-primary-outline">Reset all filters</button>
+        </div>
+      </div>
+    `;
   }
 
   getColumnConfig(field) {

@@ -9,6 +9,7 @@ export default class SortableTable extends SortableTableV1 {
     super(headersConfig, data);
     this.sorted = sorted;
     this.initialSort();
+    this.handleHeaderCellClick = this.handleHeaderCellClick.bind(this);
     this.createEventListeners();
   }
 
@@ -20,7 +21,7 @@ export default class SortableTable extends SortableTableV1 {
     this.sort(this.sorted?.id, this.sorted?.order);
   }
 
-  handleHeaderCellClick = (e) => {
+  handleHeaderCellClick(e) {
     const cellElement = e.target.closest('[data-sortable="true"]');
 
     if (!cellElement) {

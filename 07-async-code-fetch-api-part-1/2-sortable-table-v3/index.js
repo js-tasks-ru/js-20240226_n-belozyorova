@@ -1,6 +1,5 @@
 import fetchJson from './utils/fetch-json.js';
 import SortableTableV2 from '../../06-events-practice/1-sortable-table-v2/index.js';
-import {createElement} from '../../utils/dom';
 
 const BACKEND_URL = 'https://course-js.javascript.ru';
 const PAGE_SIZE = 30;
@@ -17,37 +16,8 @@ export default class SortableTable extends SortableTableV2 {
     this.isSortLocally = isSortLocally;
 
     this.setSorting();
-    this.setPageFrame(false);
+    this.resetPaging();
     this.sortOnServer(this.sorted?.id, this.sorted?.order);
-  }
-
-  createLoadingTemplate() {
-    return '<div data-element="loading" class="loading-line sortable-table__loading-line"></div>';
-  }
-
-  createEmptyPlaceholderTemplate() {
-    return `
-      <div data-element="emptyPlaceholder" class="sortable-table__empty-placeholder">
-        <div>
-          <p>No products satisfies your filter criteria</p>
-          <button type="button" class="button-primary-outline">Reset all filters</button>
-        </div>
-      </div>
-    `;
-  }
-
-  makeElement() {
-    super.makeElement();
-
-    this.subElements = {
-      ...this.subElements,
-      loadingLine: this.addSubElement(this.createLoadingTemplate()),
-      emptyPlaceholder: this.addSubElement(this.createEmptyPlaceholderTemplate())
-    };
-  }
-
-  addSubElement(template) {
-    return this.subElements.body.parentNode.appendChild(createElement(template));
   }
 
   showSubElement(name) {
@@ -68,12 +38,13 @@ export default class SortableTable extends SortableTableV2 {
 
   createEventListeners() {
     super.createEventListeners();
-    document.addEventListener('scrollend', this.handleDocumentScrollEnd.bind(this));
+    this.handleDocumentScrollEnd = this.handleDocumentScrollEnd.bind(this);
+    document.addEventListener('scrollend', this.handleDocumentScrollEnd);
   }
 
   destroyEventListeners() {
     super.destroyEventListeners();
-    document.removeEventListener('scrollend', this.handleDocumentScrollEnd.bind(this));
+    document.removeEventListener('scrollend', this.handleDocumentScrollEnd);
   }
 
   handleDocumentScrollEnd(e) {
@@ -83,14 +54,18 @@ export default class SortableTable extends SortableTableV2 {
       return;
     }
 
-    console.log('go next page');
-    this.setPageFrame();
+    this.setPaging();
+    this.sortOnServer(this.sorted?.id, this.sorted?.order);
+  }
+
+  getNextPage = () => {
+    this.setPaging();
     this.sortOnServer(this.sorted?.id, this.sorted?.order);
   }
 
   async sort(id, order) {
     this.setSorting(id, order);
-    this.setPageFrame(false);
+    this.resetPaging();
 
     if (this.isSortLocally) {
       this.sortOnClient(this.sorted.id, this.sorted.order);
@@ -141,17 +116,15 @@ export default class SortableTable extends SortableTableV2 {
     };
   }
 
-  setPageFrame(goForward = true) {
-    if (!goForward) {
-      this.pageFrame = {
-        start: 0,
-        end: PAGE_SIZE
-      };
-
-      return;
-    }
-    
+  setPaging() {
     this.pageFrame.start += PAGE_SIZE;
     this.pageFrame.end += PAGE_SIZE;
+  }
+  
+  resetPaging() {
+    this.pageFrame = {
+      start: 0,
+      end: PAGE_SIZE
+    };
   }
 }
