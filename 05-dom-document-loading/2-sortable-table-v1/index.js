@@ -10,6 +10,8 @@ export default class SortableTable {
     this.subElements = {
       body: this.element.querySelector('[data-element="body"]'),
       header: this.element.querySelector('[data-element="header"]'),
+      loadingLine: this.element.querySelector('[data-element="loading"]'),
+      emptyPlaceholder: this.element.querySelector('[data-element="emptyPlaceholder"]'),
     };
   }
 
@@ -19,6 +21,8 @@ export default class SortableTable {
         <div class="sortable-table">
           ${this.createHeaderTemplate()}
           ${this.createBodyTemplate()}
+          ${this.createLoadingLineTemplate()}
+          ${this.createEmptyPlaceholderTemplate()}
         </div>
       </div>
     `;
@@ -75,12 +79,31 @@ export default class SortableTable {
       : `<div class="sortable-table__cell">${data}</div>`;
   }
 
+  createLoadingLineTemplate() {
+    return '<div data-element="loading" class="loading-line sortable-table__loading-line" style="display: none;"></div>';
+  }
+
+  createEmptyPlaceholderTemplate() {
+    return `
+      <div data-element="emptyPlaceholder" class="sortable-table__empty-placeholder" style="display: none;">
+        <div>
+          <p>No products satisfies your filter criteria</p>
+          <button type="button" class="button-primary-outline">Reset all filters</button>
+        </div>
+      </div>
+    `;
+  }
+
   getColumnConfig(field) {
     return this.headerConfig?.find(item => item.id === field);
   }
 
   sort(field, order) {
     this.sortData(field, order);
+    this.render(field, order);
+  }
+
+  render(field, order) {
     this.updateHeader(field, order);
     this.updateBody();
     this.lastSortField = field;
